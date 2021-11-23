@@ -285,7 +285,61 @@ int main(int argc, char *argv[])
 			stringAddChar(&input, ' ');
 		}
 	}
+        //Пустая строка на входе, нужно предусмотреть данный тип ввода.
 
+	if (input.str == NULL)
+	{
+		printf("Входная строка не может быть пустой\n");
+		free(input.str);
+		return 0;
+	}
+	
+	char* tmp = input.str;
+	int b1 = 0, b2 = 0;
+	char correctSymbols[] = { '+', '-', '*', '/', '(', ')' };
+
+	for (int i = 0; i < strlen(tmp); i++)
+	{
+		char c = tmp[i];
+		if (c == '(')
+			b1++;
+		else if (c == ')')
+			b2++;
+		else if (!isdigit(c))
+		{
+			int correct = 0;
+
+			for (int j = 0; j < 6; j++)
+			{
+				if (c == correctSymbols[j])
+				{
+					correct = 1;
+					break;
+				}
+			}
+         //Некорректная обработка ввода нечисловых символов, нужно выводить соответствующее сообщение.
+			if (correct == 0)
+			{
+				printf("Некоректные символы во входной строке\n");
+				free(input.str);
+				return 0;
+			}
+		}
+	}
+        //Незакрытые скобки, нужно выводить соответствующее сообщение.
+	if (b1 != b2)
+	{
+		printf("Кол-во скобок должно быть равным\n");
+		free(input.str);
+		return 0;
+	}
+        //Неправильное расположение скобок, нужно выводить соответствующее сообщение.
+        if (currentScope == NULL)
+	{
+		printf("Неправильные позиции скобок\n");
+		free(input.str);
+		return 0;
+	}
 	/* Tokenise */
 	str = input.str;
 	while (*str != '\0') {
@@ -304,6 +358,13 @@ int main(int argc, char *argv[])
 			insertToken(currentScope, OP, normalise(*str), 0);
 			str++;
 		} else {
+			
+			if (currentScope == NULL)
+			{
+				printf("Неправильные символы во входной строке или неверные скобки\n");
+				free(input.str);
+				return 0;
+			}
 			/* Number */
 			if ((*strStart == '+' || *strStart == '-')
 				&& currentScope->last != NULL
